@@ -1,0 +1,21 @@
+#%RAML 1.0
+title: faculty
+
+types:
+  get-faculty-res: !include /types/get-faculty-res.raml
+traits:
+  common responses: !include /exchange_modules/9b2e28dd-d5d9-43ab-a43f-c35c964e7775/common-responses/1.0.0/common-responses.raml
+
+/faculty:
+  /{id}:
+    get:
+      is:
+        - common responses
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include /examples/get-faculty-res.json
+              type: get-faculty-res
+                
+

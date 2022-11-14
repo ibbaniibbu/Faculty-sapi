@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<flow name="faculty-implyFlow" doc:id="ff781ccc-1343-42f7-9d36-f7637182a589" >
+		<ee:transform doc:name="xml to json" doc:id="fb906d14-8e3f-47d3-819c-d70ab0ed5786" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+[payload]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<vm:publish queueName="vm" doc:id="97eee195-9f1a-4ded-bda8-2c3de7a1ec23" config-ref="VM_Config" doc:name="result publish to flow1"/>
+	</flow>
+	<flow name="faculty-implyFlow1" doc:id="de858d43-ed6f-429a-8043-50a961a74370" >
+		<vm:listener doc:name="Listener" doc:id="5ef16310-6511-4e50-88f7-7f3aaca4087a" config-ref="VM_Config" queueName="vm"/>
+		<ee:transform doc:name="json to csv" doc:id="68bee4f5-550c-405b-96fd-6ca467f34dfc" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/csv
+---
+payload.note]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<file:write doc:name="D:\faculty-sapi\output.csv" doc:id="09d6ad57-b80f-41f6-9393-d28c669beaa6" config-ref="File_Config" path="D:\faculty-sapi\output.csv"/>
+	</flow>
+	<flow name="faculty-implyFlow2" doc:id="1c0f8a0a-d7d4-482a-9437-2715ee171410" >
+		<file:listener doc:name="read csv" doc:id="52daef03-b179-421c-af24-e68c40039ef7" config-ref="File_Config" directory="D:\faculty-sapi" outputMimeType="application/csv">
+			<scheduling-strategy >
+				<fixed-frequency />
+			</scheduling-strategy>
+			<file:matcher filenamePattern="*.csv" />
+		</file:listener>
+		<ee:transform doc:name="csv to java" doc:id="6a03208e-f576-4455-81da-0e20eaf71e97" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<until-successful maxRetries="5" doc:name="Until Successful" doc:id="ffb93388-2ab9-4900-88c1-bb1a91057f0b" >
+			<http:request method="GET" doc:name="retry mechanism" doc:id="ab3cd077-c73e-402b-b21c-e35a0a9a54e3" path="/success" config-ref="HTTP_Request_configuration"/>
+		</until-successful>
+		<logger level="INFO" doc:name="dispay message" doc:id="a3bb9050-9121-4aae-955f-a38bd320cdd6" message="succefully fetched the data from the file"/>
+	</flow>
+	<flow name="faculty-implyFlow3" doc:id="2e7b5634-a147-402e-94dc-77a1784b6e35" >
+		<http:listener doc:name="Listener" doc:id="bb018dcb-47cc-4090-bf6b-e58075dbdb9e" path="/success" config-ref="faculty-httpListenerConfig"/>
+		<ee:transform doc:name="successfull appication" doc:id="3bc0cb8f-60da-4be5-b8e5-79d1b6378aad" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "sucessfull rest-sapi called"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

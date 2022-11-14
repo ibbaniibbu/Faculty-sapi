@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
+	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd 
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd 
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd">
+	<http:listener-config name="faculty-httpListenerConfig">
+        <http:listener-connection host="${http.host}" port="${http.port}" />
+    </http:listener-config>
+    <apikit:config name="faculty-config" api="faculty.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    
+    <vm:config name="VM_Config" doc:name="VM Config" doc:id="5b97eba7-9284-41be-b94f-33632dc0caa7" >
+		<vm:queues >
+			<vm:queue queueName="vm" />
+		</vm:queues>
+	</vm:config>
+	
+		<file:config name="File_Config" doc:name="File Config" doc:id="bcfb36af-8e0e-4c05-9e6e-d7482acbf643" />
+	<configuration-properties doc:name="Configuration properties" doc:id="b3f6796a-b863-41f0-9ffa-6f3411ff89ed" file="properties/dev.yaml" />
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="b9c96ae7-4817-4e1a-9d33-e3a17e21665a" >
+		<http:request-connection host="${http.host}" port="${http.port}" />
+	</http:request-config>
+	<configuration doc:name="Configuration" doc:id="919efd2d-4a05-44ef-8a2a-e59e4b0201dd" defaultErrorHandler-ref="global-error-handling" />
+	<api-gateway:autodiscovery apiId="18219286" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="9c137c67-bc37-4772-bdad-2efc7ec94613" flowRef="faculty-main" />
+	
+	
+</mule>
